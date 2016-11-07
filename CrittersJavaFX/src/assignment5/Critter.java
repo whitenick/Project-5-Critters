@@ -1,14 +1,10 @@
 package assignment5;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
-import java.lang.reflect.InvocationTargetException;
-import assignment5.InvalidCritterException;
-import application.Main;
+import java.util.*;
 
 import assignment5.Params;
-import javafx.scene.control.Label;
+import javafx.stage.Stage;
 
 public abstract class Critter {
 	/* NEW FOR PROJECT 5 */
@@ -41,53 +37,51 @@ public abstract class Critter {
 	public abstract CritterShape viewShape(); 
 	
 	private static String myPackage;
-	private	static List<Critter> population = new java.util.ArrayList<Critter>();
-	private static List<Critter> babies = new java.util.ArrayList<Critter>();
-	private static List<Integer> xCoor = new ArrayList<Integer>();
-	private static List<Integer> yCoor = new ArrayList<Integer>();
-	private static int indexA, indexB, indexAll = 0;
 	
-	
+	private static List<Critter> population = new ArrayList<Critter>();
+	private static List<Critter> babies = new ArrayList<Critter>();
+
 	// Gets the package name.  This assumes that Critter and its subclasses are all in the same package.
 	static {
 		myPackage = Critter.class.getPackage().toString().split(" ")[1];
 	}
 	
-	protected void lookMov(int direction) {
-		 switch (direction) {
-         case 0: tempX++;
-             tempX = tempX%Params.world_width;
-             break;
-         case 1: tempX++;
-             tempX = tempX%Params.world_width;
-             tempY--;
-             tempY = tempY%Params.world_height;
-             break;
-         case 2: tempY--;
-         	 tempY = tempY%Params.world_height;
-             break;
-         case 3: tempY--;
-             tempY = tempY%Params.world_height;
-             tempX--;
-             tempX = tempX%Params.world_width;
-             break;
-         case 4: tempX--;
-         	 tempX = tempX%Params.world_width;
-             break;
-         case 5: tempY++;
-         	 tempY = tempY%Params.world_height;
-             tempX--;
-             tempX = tempX%Params.world_width;
-             break;
-         case 6: tempY++;
-         	 tempY = tempY%Params.world_height;
-             break;
-         case 7: tempX++;
-         	tempX = tempX%Params.world_width;
-         	tempY++;
-         	tempY = tempY%Params.world_height;
-             break;
-     }
+	private int[] lookMov(int direction, int tempX, int tempY) {
+		int[] coor = new int[2];
+		switch(direction){
+		    case 0: tempX++;
+		        tempX = tempX%Params.world_width;
+		        break;
+		    case 1: tempX++;
+		        tempX = tempX%Params.world_width;
+		        tempY--;
+		        tempY = tempY%Params.world_height;
+		        break;
+		    case 2: tempY--;
+		     	tempY = tempY%Params.world_height;
+		        break;
+		    case 3: tempY--;
+		        tempY = tempY%Params.world_height;
+		        tempX--;
+		        tempX = tempX%Params.world_width;
+		        break;
+		    case 4: tempX--;
+		     	tempX = tempX%Params.world_width;
+		        break;
+		    case 5: tempY++;
+		     	tempY = tempY%Params.world_height;
+		        tempX--;
+		        tempX = tempX%Params.world_width;
+		        break;
+		    case 6: tempY++;
+		     	tempY = tempY%Params.world_height;
+		        break;
+		    case 7: tempX++;
+		     	tempX = tempX%Params.world_width;
+		     	tempY++;
+		     	tempY = tempY%Params.world_height;
+		        break;
+		 }
 		if(tempX < 0){
 			tempX += Params.world_width;
 		}
@@ -96,35 +90,37 @@ public abstract class Critter {
 		}
 		tempX %= Params.world_width;
 		tempY %= Params.world_height;
+		
+		coor[0] = tempX;
+		coor[1] = tempY;
+		return coor;
 	}
 	
 	protected String look(int direction, boolean steps) {
-		//int tempX = this.x_coord;
-		//int tempY = this.y_coord;
-		tempX = this.x_coord;
-		tempY = this.y_coord;
-		
+		this.energy -= Params.look_energy_cost;
 		String returnString = null;
-		if(!steps){
-			lookMov(direction);
+		int copyX = this.oldX;
+		int copyY = this.oldY;
+		int [] coor = null;
+		if(steps){
+			coor = lookMov(direction, copyX, copyY);
+			coor = lookMov(direction, copyX, copyY);
+		}else coor = lookMov(direction, copyX, copyY);
+		if(coor != null){
+			copyX = coor[0];
+			copyY = coor[1];
+			
 			for(int i = 0; i<population.size(); i++) {
-				if((tempX == population.get(i).x_coord) && (tempY == population.get(i).y_coord)) {
+				if((population.get(i).energy > 0) && (copyX == population.get(i).oldX) 
+						&& (copyY == population.get(i).oldY)) {
 					returnString = population.get(i).toString();
+					//returnString is the .toString of the last critter in the space looked at
 				}
 			}
 		}
-		if(steps) {
-			lookMov(direction);
-			lookMov(direction);
-			for(int i = 0; i<population.size(); i++) {
-				if((tempX == population.get(i).x_coord) && (tempY == population.get(i).y_coord)) {
-					returnString = population.get(i).toString();
-				}
-			}
-		}
+		
 		
 		return returnString;
-		
 	}
 	
 	/* rest is unchanged from Project 4 */
@@ -146,20 +142,28 @@ public abstract class Critter {
 	private int energy = 0;
 	protected int getEnergy() { return energy; }
 	
-	private int x_coord;
-	private int y_coord;
+	public int x_coord;
+	public int y_coord;
 	
-	private int tempX = x_coord;
-	private int tempY = y_coord;
+	private int oldX;
+	private int oldY;
+	private int numWalk;
+	private int numRun;
 	
 	protected final void walk(int direction) {
-		makeMov(direction);
+		if((numWalk < 1) && (numRun < 1)){
+			makeMov(direction);
+		}
+		numWalk++;
 		energy -= Params.walk_energy_cost;
 	}
 	
 	protected final void run(int direction) {
-		makeMov(direction);
-		makeMov(direction);
+		if((numWalk < 1) && (numRun < 1)){
+			makeMov(direction);
+			makeMov(direction);
+		}
+		numRun++;
 		energy -= Params.run_energy_cost;
 	}
 	
@@ -206,14 +210,13 @@ public abstract class Critter {
 		}
 		x_coord %= Params.world_width;
 		y_coord %= Params.world_height;
-	
 	}
 	
 	protected final void reproduce(Critter offspring, int direction) {
 		if(this.energy > Params.min_reproduce_energy) {
 			offspring.energy = this.energy/2;
 			this.energy/=2;
-			makeMov(direction);
+			offspring.makeMov(direction);
 			babies.add(offspring);
 		}
 	}
@@ -223,138 +226,102 @@ public abstract class Critter {
 	
 	
 	public static void worldTimeStep() {
-		for(int i = 0; i<population.size(); i++){
-			Critter thisCritter = population.get(i);
-			indexAll = i;
-			thisCritter.doTimeStep();
-		}
-		
-		for(int i = 0; i<population.size(); i++){
-			Critter thisCritter = population.get(i);
-			thisCritter.energy -= Params.rest_energy_cost;
-			if(thisCritter.energy <= 0){
-				xCoor.remove(i);
-				yCoor.remove(i);
+		for(int i = 0; i < population.size(); i++){
+			Critter crit = population.get(i);
+			
+			crit.energy -= Params.rest_energy_cost;
+			crit.oldX = crit.x_coord;
+			crit.oldY = crit.y_coord;
+			crit.doTimeStep();
+			
+			if(crit.energy <= 0){
 				population.remove(i);
 			}
 		}
 		
 		for(int i = 0; i<population.size(); i++){
-			indexA = i;
 			Critter aCritter = population.get(i);
 			for(int j = 0; j<population.size(); j++){
-				indexB = j;
 				if(i != j){
 					Critter bCritter = population.get(j);
-					if((aCritter.x_coord == bCritter.x_coord) 
-					&& (aCritter.y_coord == bCritter.y_coord)){
-						//TODO: Make critters fight, remove a dead critter, continue to fight
+					if((aCritter.x_coord == bCritter.x_coord)
+					&& (aCritter.y_coord == bCritter.y_coord)
+					&& (aCritter.energy > 0) && (bCritter.energy > 0)){
 						handleFight(aCritter, bCritter, i, j);
 					}
 				}
 			}
 		}
 		
-		for(int i = 0; i < babies.size(); i++) {
-			xCoor.add(babies.get(i).x_coord);
-			yCoor.add(babies.get(i).y_coord);
-		}
-		population.addAll(babies);
-		babies.clear();
-		
 		for(int i = 0; i<population.size(); i++){
 			Critter thisCritter = population.get(i);
-			thisCritter.energy -= Params.rest_energy_cost;
+			thisCritter.numWalk = 0;
+			thisCritter.numRun = 0;
 			if(thisCritter.energy <= 0){
-				xCoor.remove(i);
-				yCoor.remove(i);
 				population.remove(i);
 			}
 		}
 		
+		population.addAll(babies);
+		babies.clear();
+		
 		for(int i = 0; i < Params.refresh_algae_count; i++) {
 			try {
-				Critter.makeCritter("Algae");
+				makeCritter("Algae");
 			} catch (InvalidCritterException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	private static void printRBorder(){
-		for(int i = 0; i < Params.world_width; i++){
-			System.out.print("-");
-		}
+	public static void displayWorld() {
+		//TODO:Create once, refresh in subsequent calls
+		CritterWorldGUI critterWorld = new CritterWorldGUI();
+		Stage secondaryStage = new Stage();
+		critterWorld.start(secondaryStage);
 	}
-	
-	public static void displayWorld() {}
 	
 	/* create and initialize a Critter subclass
 	 * critter_class_name must be the name of a concrete subclass of Critter, if not
 	 * an InvalidCritterException must be thrown
 	 */
-	
-	/**
-	 * 
-	 * @param critter_class_name
-	 * @throws InvalidCritterException
-	 */
 	public static void makeCritter(String critter_class_name) throws InvalidCritterException {
-		try { 
+		try {
 			String critterClass = myPackage + "." + critter_class_name;
 			Critter obj = (Critter) Class.forName(critterClass).newInstance();
 			obj.x_coord = getRandomInt(Params.world_width);
 			obj.y_coord = getRandomInt(Params.world_height);
+			obj.oldX = obj.x_coord;
+			obj.oldY = obj.y_coord;
 			obj.energy = Params.start_energy;
-			xCoor.add(obj.x_coord);
-			yCoor.add(obj.y_coord);
-			population.add(obj);
 			
-		} catch(InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			population.add(obj);
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			throw new InvalidCritterException(critter_class_name);
 		}
 	}
 	
 	public static List<Critter> getInstances(String critter_class_name) throws InvalidCritterException {
-		List<Critter> result = new ArrayList<Critter>();
-		String critterClass = myPackage + "." + critter_class_name;
-		try {
-			Class crits = Class.forName(critterClass);
-			Critter obj = (Critter) crits.newInstance();
-			for(int i = 0; i<population.size(); i++) {
-				Critter critter = population.get(i);
-				if(critter.toString().equals(obj.toString())) {
-					result.add(critter);
+		List<Critter> critInstances = new ArrayList<Critter>();
+		try{
+			String critterClass = myPackage + "." + critter_class_name;
+			Critter obj = (Critter) Class.forName(critterClass).newInstance();
+			for(Critter crit : population){
+				if(crit.getClass().isInstance(obj)){
+					critInstances.add(crit);
 				}
 			}
-			Class c = obj.getClass();
-			try {
-				Method craigMethod = c.getMethod("runStats", List.class);
-				try {
-					craigMethod.invoke(obj, result);
-				} catch(IllegalArgumentException | InvocationTargetException e) {
-					throw new InvalidCritterException(critter_class_name);
-				}
-			} catch(NoSuchMethodException | SecurityException e) {
-				throw new InvalidCritterException(critter_class_name);
-			}
-			
-		} catch(InstantiationException e) {
-			InvalidCritterException except = new InvalidCritterException(critter_class_name);
-			throw except;
-		} catch (IllegalAccessException e) {
-			throw new InvalidCritterException(critter_class_name);
-		} catch (ClassNotFoundException e) {
+		} catch(InstantiationException | IllegalAccessException | ClassNotFoundException e){
 			throw new InvalidCritterException(critter_class_name);
 		}
-		return result;
+		
+		return critInstances;
 	}
 	
 	public static void runStats(List<Critter> critters) {
 		
 		String outString = ("" + critters.size() + " critters as follows -- ");
-		Main.outputResult.setText(Main.outputResult.getText()+outString+"\n");
+		application.Main.outputResult.setText(application.Main.outputResult.getText()+outString+"\n");
 		java.util.Map<String, Integer> critter_count = new java.util.HashMap<String, Integer>();
 		for (Critter crit : critters) {
 			String crit_string = crit.toString();
@@ -368,17 +335,18 @@ public abstract class Critter {
 		String prefix = "";
 		for (String s : critter_count.keySet()) {
 			outString = (prefix + s + ":" + critter_count.get(s));
-			Main.outputResult.setText(Main.outputResult.getText()+outString+"\n");
+			application.Main.outputResult.setText(application.Main.outputResult.getText()+outString+"\n");
 			prefix = ", ";
 		}
-		Main.outputResult.setText(Main.outputResult.getText()+"\n");
+		application.Main.outputResult.setText(application.Main.outputResult.getText()+"\n");
+		
 	}
 	
 	/* the TestCritter class allows some critters to "cheat". If you want to 
 	 * create tests of your Critter model, you can create subclasses of this class
 	 * and then use the setter functions contained here. 
 	 * 
-	 * NOTE: you must make sure thath the setter functions work with your implementation
+	 * NOTE: you must make sure that the setter functions work with your implementation
 	 * of Critter. That means, if you're recording the positions of your critters
 	 * using some sort of external grid or some other data structure in addition
 	 * to the x_coord and y_coord functions, then you MUST update these setter functions
@@ -386,12 +354,6 @@ public abstract class Critter {
 	 */
 	static abstract class TestCritter extends Critter {
 		protected void setEnergy(int new_energy_value) {
-			if(new_energy_value <= 0) {
-				super.energy = 0;
-				xCoor.remove(indexAll);
-				yCoor.remove(indexAll);
-				population.remove(indexAll);
-			}
 			super.energy = new_energy_value;
 		}
 		
@@ -444,59 +406,72 @@ public abstract class Critter {
 	}
 	
 	private static void handleFight(Critter a, Critter b, int aIndex, int bIndex){
-		int aOldX = a.x_coord;
-		int aOldY = a.y_coord;
-		
-		int bOldX = b.x_coord;
-		int bOldY = b.y_coord;
-		
 		boolean aFight = a.fight(b.toString());
 		boolean bFight = b.fight(a.toString());
 		
-		if((a.x_coord == b.x_coord) && (a.y_coord == b.y_coord) && (aFight || bFight)){
+		if(!aFight){
+			if((a.x_coord != a.oldX) || (a.y_coord != a.oldY)){
+				for(int i = 0; i < population.size(); i++){
+					if((aIndex != i) && (population.get(i).energy > 0)){
+						if((population.get(i).x_coord == a.x_coord)
+							&&(population.get(i).y_coord == a.y_coord)){
+							a.x_coord = a.oldX;
+							a.y_coord = a.oldY;
+							i = population.size();
+						}
+					}
+				}
+			}
+		}
+		
+		if(!bFight){
+			if((b.x_coord != b.oldX) && (b.y_coord != b.oldY)){
+				for(int i = 0; i < population.size(); i++){
+					if((bIndex != i) && (population.get(i).energy > 0)){
+						if((population.get(i).x_coord == b.x_coord)
+							&&(population.get(i).y_coord == b.y_coord)){
+							b.x_coord = b.oldX;
+							b.y_coord = b.oldY;
+							i = population.size();
+						}
+					}
+				}
+			}
+		}
+		
+		if((a.x_coord == b.x_coord) && (a.y_coord == b.y_coord) && (aFight || bFight)
+				&&(a.energy > 0) && (b.energy > 0)){
 			int aRoll = 0;
 			int bRoll = 0;
 			
 			if(aFight){
-				if(a.energy > 0){
-					aRoll = getRandomInt(a.energy);
-				}
+				aRoll = getRandomInt(a.energy);
 			}else
 				aRoll = 0;
 			
 			if(bFight){
-				if(b.energy > 0){
-					bRoll = getRandomInt(b.energy);
-				}
+				bRoll = getRandomInt(b.energy);
 			}else
 				bRoll = 0;
 			
 			if(aRoll > bRoll){
 				a.energy += b.energy/2;
-				xCoor.remove(bIndex);
-				yCoor.remove(bIndex);
-				population.remove(bIndex);
+				b.energy = 0;
 			}
 			else if(bRoll > aRoll){
 				b.energy += a.energy/2;
-				yCoor.remove(aIndex);
-				population.remove(aIndex);
+				a.energy = 0;
 			}
 			else if(aRoll == bRoll){
 				int ran = getRandomInt(2);
 				if(ran == 0){
 					a.energy += b.energy/2;
-					xCoor.remove(bIndex);
-					yCoor.remove(bIndex);
-					population.remove(bIndex);
+					b.energy = 0;
 				}else{
 					b.energy += a.energy/2;
-					xCoor.remove(aIndex);
-					yCoor.remove(aIndex);
-					population.remove(aIndex);
+					a.energy = 0;
 				}
 			}
 		}
 	}
-	
 }

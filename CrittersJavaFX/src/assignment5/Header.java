@@ -1,9 +1,9 @@
 /* CRITTERS GUI <MyClass.java>
  * EE422C Project 4b submission by
  * Replace <...> with your actual data.
- * <Student1 Name>
- * <Student1 EID>
- * <Student1 5-digit Unique No.>
+ * Javier Cortes
+ * jc74593
+ * 16445
  * <Student2 Name>
  * <Student2 EID>
  * <Student2 5-digit Unique No.>
@@ -16,5 +16,3 @@
    files, or you are not sure about details, add comments to the README.txt file.
  */
 package assignment5;
-
-import javafx.*;
