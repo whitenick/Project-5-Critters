@@ -1,51 +1,72 @@
 package assignment5;
-import application.Main;
-import javafx.event.*;
+import java.util.List;
+import assignment5.Critter.CritterShape;
 import javafx.stage.*;
 import javafx.scene.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.paint.Color;
-import javafx.geometry.*;
 import javafx.application.*;
 
 
 
 
 public class CritterWorldGUI extends Application {
-	public static GridPane grid = new GridPane();
+	static int scale = 8;
+	private static ScrollPane root = new ScrollPane();
+	private int cWidth = Params.world_width * scale;
+	private int cHeight = Params.world_height * scale;
 	
 	public CritterWorldGUI() {
 		
 	}
 	
+	private static void paintCanvas(GraphicsContext gc){
+		gc.clearRect(0, 0, Params.world_width * scale, Params.world_height * scale);
+		List<Critter> critters = Critter.runPopulation();
+		
+		for(int i = 0; i < critters.size(); i++){
+			CritterShape shape = critters.get(i).viewShape();
+			
+			//TODO:Finish other cases
+			switch(shape){
+				case CIRCLE:
+					gc.setFill(critters.get(i).viewColor());
+					gc.fillOval(critters.get(i).x_coord, critters.get(i).y_coord, 5, 5);
+					break;
+				case SQUARE:
+					gc.setFill(Color.BLACK);
+					gc.fillRect(scale * critters.get(i).x_coord, scale * critters.get(i).y_coord, scale, scale);
+					break;
+				case TRIANGLE:
+					gc.setFill(critters.get(i).viewColor());
+					gc.fillOval(critters.get(i).x_coord, critters.get(i).y_coord, 5, 5);
+					break;
+				case DIAMOND:
+					gc.setFill(critters.get(i).viewColor());
+					gc.fillOval(critters.get(i).x_coord, critters.get(i).y_coord, 5, 5);
+					break;
+				case STAR:
+					gc.setFill(critters.get(i).viewColor());
+					gc.fillOval(critters.get(i).x_coord, critters.get(i).y_coord, 5, 5);
+					break;
+			}
+		}
+	}
+	
 	@Override 
 	public void start(Stage primaryStage) {
-		try {
-			grid.setAlignment(Pos.CENTER);
-			grid.setHgap(2);
-			grid.setVgap(2);
-			grid.setPadding(new Insets(25, 25, 25, 25));
-			grid.setGridLinesVisible(false);
-			grid.setId("pane");
-			
-			
-			
-			grid.setStyle("-fx-background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/ca/Star-forming_region_S106_(captured_by_the_Hubble_Space_Telescope).jpg')");
-			double widthConstant = grid.getWidth();
-			double heightConstant = grid.getHeight();
-			Scene scene = new Scene(grid, widthConstant, heightConstant, Color.AQUA);
-			//scene.getStylesheets().addAll(this.getClass().getResource("application.css").toExternalForm());
-			
-			
-			//grid.setStyle("-fx-background-color: #C0C0C0;");
-			primaryStage.setScene(scene);
-			primaryStage.setTitle("CRITTER WORLD");
-			
-			primaryStage.show();
-			
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
+		//TODO:Set Background WHITE
+		Canvas world = new Canvas(cWidth, cHeight);
+		root.setContent(world);
+		Scene scene = new Scene(root);
+		GraphicsContext gc = world.getGraphicsContext2D();
 		
+		paintCanvas(gc);
+		
+		primaryStage.setScene(scene);
+		primaryStage.setTitle("CRITTER WORLD");
+		primaryStage.show();
 	}
 }
