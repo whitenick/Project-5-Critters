@@ -1,12 +1,11 @@
-/* CRITTERS GUI <MyClass.java>
- * EE422C Project 4b submission by
- * Replace <...> with your actual data.
+/* CRITTERS <Header.java>
+ * EE422C Project 4 submission by
+ * Nicholas White
+ * NWW295
+ * 16545
  * Javier Cortes
  * jc74593
  * 16445
- * <Student2 Name>
- * <Student2 EID>
- * <Student2 5-digit Unique No.>
  * Slip days used: <0>
  * Fall 2016
  */
