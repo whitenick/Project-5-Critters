@@ -1,5 +1,15 @@
 package assignment5;
-
+/* CRITTERS <Critter.java>
+ * EE422C Project 4 submission by
+ * Nicholas White
+ * NWW295
+ * 16545
+ * Javier Cortes
+ * jc74593
+ * 16445
+ * Slip days used: <0>
+ * Fall 2016
+ */
 import java.util.List;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -378,7 +388,7 @@ public abstract class Critter {
 		for (String s : critter_count.keySet()) {
 			outString = (prefix + s + ":" + critter_count.get(s));
 			application.Main.outputResult.setText(application.Main.outputResult.getText()+outString+"\n");
-			//prefix = ", ";
+			prefix = ", ";
 		}
 		application.Main.outputResult.setText(application.Main.outputResult.getText()+"\n");
 		
