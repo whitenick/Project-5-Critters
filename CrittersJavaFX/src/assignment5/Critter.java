@@ -1,14 +1,8 @@
 package assignment5;
 
 import java.util.List;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
-
 import assignment5.Params;
-import javafx.stage.Stage;
 
 public abstract class Critter {
 	/* NEW FOR PROJECT 5 */
@@ -146,8 +140,8 @@ public abstract class Critter {
 	private int energy = 0;
 	protected int getEnergy() { return energy; }
 	
-	public int x_coord;
-	public int y_coord;
+	private int x_coord;
+	private int y_coord;
 	
 	private int oldX;
 	private int oldY;
@@ -279,10 +273,31 @@ public abstract class Critter {
 	}
 	
 	public static void displayWorld() {
-		//TODO:Create once, refresh in subsequent calls
-		CritterWorldGUI critterWorld = new CritterWorldGUI();
-		Stage secondaryStage = new Stage();
-		critterWorld.start(secondaryStage);
+		if(CritterWorldGUI.isClosed()){
+			CritterWorldGUI.startDisplay();
+		}
+		CritterWorldGUI.refresh();
+		
+		List<Critter> displayList = new ArrayList<Critter>();
+		for(int i = 0; i < population.size(); i++){
+			int sim = 0;
+			Critter a = population.get(i);
+			for(int j = i+1; j < population.size(); j++){
+				Critter b = population.get(j);
+				if(a.x_coord == b.x_coord && a.y_coord == b.y_coord){
+					sim = 1;
+				}
+			}
+			if(sim == 0){
+				displayList.add(a);
+			}
+		}
+		
+		for(int i = 0; i < displayList.size(); i++){
+			int x = displayList.get(i).x_coord;
+			int y = displayList.get(i).y_coord;
+			CritterWorldGUI.draw(x, y, displayList.get(i));
+		}
 	}
 	
 	/* create and initialize a Critter subclass
@@ -315,23 +330,7 @@ public abstract class Critter {
 					critInstances.add(crit);
 				}
 			}
-			//test
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PrintStream ps = new PrintStream(baos);
-			System.setOut(ps);
-			Class classInput = obj.getClass();
-			try {
-				Method craigMethod = classInput.getMethod("runStats", List.class);
-				try {
-					craigMethod.invoke(obj, critInstances);
-					application.Main.outputResult.setText(application.Main.outputResult.getText() + baos.toString() + "\n");
-				} catch (IllegalArgumentException | InvocationTargetException e) {
-					throw new InvalidCritterException(critter_class_name);
-				}
-			} catch(NoSuchMethodException | SecurityException e){
-				throw new InvalidCritterException(critter_class_name);
-			}
-		} catch ( InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+		} catch(InstantiationException | IllegalAccessException | ClassNotFoundException e){
 			throw new InvalidCritterException(critter_class_name);
 		}
 		
@@ -359,7 +358,6 @@ public abstract class Critter {
 			prefix = ", ";
 		}
 		application.Main.outputResult.setText(application.Main.outputResult.getText()+"\n");
-		
 	}
 	
 	/* the TestCritter class allows some critters to "cheat". If you want to 
