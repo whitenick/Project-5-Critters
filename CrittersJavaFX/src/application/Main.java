@@ -266,7 +266,7 @@ public class Main extends Application {
 		BorderPane.setMargin(bottomPane, new Insets(20));
 		BorderPane.setMargin(rGrid, new Insets(0, 20, 20, 20));
 		root.setBackground(new Background(new BackgroundFill(Color.GOLD, CornerRadii.EMPTY, Insets.EMPTY)));
-		
+		//root.setStyle("-fx-background-image: url("Space.jpg");-fx-background-size : " + root.getScaleX() + ", " + root.getScaleY() + ";-fx-background-repeat: no-repeat;");
 		
 		initCenter();
 		root.setCenter(grid);
