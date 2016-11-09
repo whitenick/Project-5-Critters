@@ -378,7 +378,7 @@ public abstract class Critter {
 		for (String s : critter_count.keySet()) {
 			outString = (prefix + s + ":" + critter_count.get(s));
 			application.Main.outputResult.setText(application.Main.outputResult.getText()+outString+"\n");
-			prefix = ", ";
+			//prefix = ", ";
 		}
 		application.Main.outputResult.setText(application.Main.outputResult.getText()+"\n");
 		
