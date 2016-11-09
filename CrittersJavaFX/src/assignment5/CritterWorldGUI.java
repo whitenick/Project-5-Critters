@@ -6,15 +6,21 @@ import javafx.scene.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.application.*;
+import javafx.geometry.Insets;
 
 
 
 
 public class CritterWorldGUI extends Application {
 	static int scale = 8;
-	private static ScrollPane root = new ScrollPane();
+	private static Pane root = new Pane();
+	public static ScrollPane scrollPane = new ScrollPane();
 	private int cWidth = Params.world_width * scale;
 	private int cHeight = Params.world_height * scale;
 	
@@ -33,7 +39,7 @@ public class CritterWorldGUI extends Application {
 			switch(shape){
 				case CIRCLE:
 					gc.setFill(critters.get(i).viewColor());
-					gc.fillOval(critters.get(i).x_coord, critters.get(i).y_coord, 5, 5);
+					gc.fillOval(critters.get(i).x_coord * scale, critters.get(i).y_coord * 8, 5, 5);
 					break;
 				case SQUARE:
 					gc.setFill(Color.BLACK);
@@ -59,9 +65,14 @@ public class CritterWorldGUI extends Application {
 	public void start(Stage primaryStage) {
 		//TODO:Set Background WHITE
 		Canvas world = new Canvas(cWidth, cHeight);
-		root.setContent(world);
+		//root.setContent(world);
 		Scene scene = new Scene(root);
 		GraphicsContext gc = world.getGraphicsContext2D();
+		root.setBackground(new Background(new BackgroundFill(Color.AQUAMARINE, CornerRadii.EMPTY, Insets.EMPTY)));
+		root.getChildren().add(scrollPane);
+		scrollPane.setContent(world);;
+		scrollPane.setBackground(new Background( new BackgroundFill(Color.MAROON, CornerRadii.EMPTY, Insets.EMPTY)));
+		
 		
 		paintCanvas(gc);
 		

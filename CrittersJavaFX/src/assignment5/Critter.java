@@ -1,6 +1,10 @@
 package assignment5;
 
 import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import assignment5.Params;
@@ -311,7 +315,22 @@ public abstract class Critter {
 					critInstances.add(crit);
 				}
 			}
-		} catch(InstantiationException | IllegalAccessException | ClassNotFoundException e){
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintStream ps = new PrintStream(baos);
+			System.setOut(ps);
+			Class classInput = obj.getClass();
+			try {
+				Method craigMethod = classInput.getMethod("runStats", List.class);
+				try {
+					craigMethod.invoke(obj, critInstances);
+					application.Main.outputResult.setText(application.Main.outputResult.getText() + baos.toString() + "\n");
+				} catch (IllegalArgumentException | InvocationTargetException e) {
+					throw new InvalidCritterException(critter_class_name);
+				}
+			} catch(NoSuchMethodException | SecurityException e){
+				throw new InvalidCritterException(critter_class_name);
+			}
+		} catch ( InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			throw new InvalidCritterException(critter_class_name);
 		}
 		
