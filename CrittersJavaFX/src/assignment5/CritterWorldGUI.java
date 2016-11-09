@@ -1,26 +1,22 @@
 package assignment5;
+import java.util.List;
 import assignment5.Critter.CritterShape;
 import javafx.stage.*;
 import javafx.scene.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.application.*;
+import javafx.geometry.Insets;
 import javafx.event.EventHandler;
 
 
-/* CRITTERS <CritterWorldGUI.java>
- * EE422C Project 4 submission by
- * Nicholas White
- * NWW295
- * 16545
- * Javier Cortes
- * jc74593
- * 16445
- * Slip days used: <0>
- * Fall 2016
- */
+
 
 public class CritterWorldGUI extends Application {
 	static int scale = 10;
