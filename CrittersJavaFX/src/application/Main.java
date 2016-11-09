@@ -11,6 +11,7 @@ import java.util.Scanner;
 import assignment5.Critter;
 import assignment5.InvalidCritterException;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 //import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -45,6 +46,8 @@ public class Main extends Application {
 	private static GridPane rGrid = new GridPane();
 	private static BorderPane bottomPane = new BorderPane();
 	public static Label outputResult = new Label();
+	public static Number sliderValue = 0;
+	public static TextField globalStatsText = new TextField();
 	
 	private static void initCenter(){
 		grid.setAlignment(Pos.TOP_CENTER);
@@ -133,28 +136,44 @@ public class Main extends Application {
 			@Override
 			public void handle(ActionEvent e) {
 				errorProcessing.setText(null);
-				int stepCount = 0;
+				int stepCount = 1;
 				String unparsedNumber = stepTextField.getText();
 				Scanner numberScan = new Scanner(unparsedNumber);
 				if(stepTextField.getText() != null && !stepTextField.getText().isEmpty() && numberScan.hasNextInt()) {
-					if(Integer.parseInt(unparsedNumber)>1) {
+					if(Integer.parseInt(unparsedNumber)>0) {
 						stepCount = Integer.parseInt(unparsedNumber);
 					}
-					else if (stepTextField.getText() == null) {
-						Critter.worldTimeStep();
-					}
+	
 					else {
 						errorProcessing.setText("Invalid Input");
 					}
 				}
-				else {
-					errorProcessing.setText("Invalid Input");
-				}
 				
 				for(int i = 0; i<stepCount; i++) {
 					Critter.worldTimeStep();
+//					if(sliderValue.intValue() <= stepCount && sliderValue.intValue()!=0) {
+//						if(i%sliderValue.intValue() == 0) {
+//							Critter.displayWorld();
+//						}
+//					}
 				}
-				
+				List<Critter> newCritterList = new ArrayList<Critter>();
+				Critter.displayWorld();
+				if(globalStatsText.getText() != null && !globalStatsText.getText().isEmpty()) {
+					String statsclass = globalStatsText.getText();
+					try {
+						newCritterList = Critter.getInstances(statsclass);
+						
+						//Critter.runStats(critterList);
+					} catch(InvalidCritterException r) {
+						String returnString = r.toString();
+						outputResult.setText(returnString);
+					}
+				}
+				else {
+					newCritterList = Critter.runPopulation();
+					Critter.runStats(newCritterList);
+				}
 			}
 		});
 	}
@@ -175,8 +194,8 @@ public class Main extends Application {
 		
 		stepSlide.setMin(0);
 		stepSlide.setMax(100);
-		stepSlide.setMajorTickUnit(25);
-		stepSlide.setMinorTickCount(4);
+		stepSlide.setMajorTickUnit(20);
+		stepSlide.setMinorTickCount(9);
 		stepSlide.setBlockIncrement(2);
 		stepSlide.setSnapToTicks(true);
 		stepSlide.setShowTickLabels(true);
@@ -192,6 +211,7 @@ public class Main extends Application {
 		stepSlide.valueProperty().addListener(new ChangeListener<Number>() {
 			public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
 				sliderLabel.setText(new_val.toString());
+				sliderValue = new_val;
 			}
 		});
 		
@@ -220,6 +240,7 @@ public class Main extends Application {
 		subGrid.add(statsLabel, 0, 0);
 		
 		TextField statsTextField = new TextField();
+		globalStatsText = statsTextField;
 		subGrid.add(statsTextField, 1, 0);
 		
 		Button statsBt = new Button();
@@ -254,9 +275,23 @@ public class Main extends Application {
 			}
 		});
 		
+		Button quit = new Button();
+		quit.setText("Quit");
+		
+		quit.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent arg0) {
+				Platform.exit();
+			}
+		});
+		
 		rGrid.add(subGrid, 0, 0);
 		rGrid.add(statsBt, 0, 1);
 		rGrid.add(scroll, 0, 2);
+		rGrid.add(quit, 0, 3); 
+		
+		
 	}
 	
 	@Override
