@@ -1,17 +1,26 @@
 package application;
 //import assignment5;
 	
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+
+//import javax.swing.event.ChangeListener;
 
 import assignment5.Critter;
 import assignment5.InvalidCritterException;
 import javafx.application.Application;
+import javafx.beans.property.DoubleProperty;
+//import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -20,15 +29,21 @@ import javafx.scene.text.Text;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ChangeListener;
+
 
 public class Main extends Application {
+	private static final Pos CENTER = null;
 	private static BorderPane root = new BorderPane();
 	public static GridPane grid = new GridPane();
 	private static GridPane bGrid = new GridPane();
 	private static GridPane rGrid = new GridPane();
+	private static BorderPane bottomPane = new BorderPane();
 	public static Label outputResult = new Label();
 	
 	private static void initCenter(){
@@ -56,6 +71,11 @@ public class Main extends Application {
 		Button makeButton = new Button();
 		grid.add(makeButton, 0, 3);
 		
+		Label errorProcessing = new Label();
+		errorProcessing.setFont(Font.font("Tahoman", FontWeight.NORMAL, 20));
+		grid.add(errorProcessing, 0, 11);
+		errorProcessing.setAlignment(Pos.CENTER);
+		
 		
 		//Button for making and preparing data for critters 
 		
@@ -63,26 +83,37 @@ public class Main extends Application {
 		makeButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
+				errorProcessing.setText(null);
 				String className = makeTextField.getText();
 				String number = numberTextField.getText();
+				Scanner numberScan = new Scanner(number);
 				int critterCount = 0;
 				if(makeTextField.getText() != null && !makeTextField.getText().isEmpty()) {
 					
-					if (numberTextField.getText() != null && !numberTextField.getText().isEmpty()) {
+					if (numberTextField.getText() != null && !numberTextField.getText().isEmpty() && numberScan.hasNextInt()) {
 						if(Integer.parseInt(number)>= 1) {
 							critterCount = Integer.parseInt(number);
 						}
 					}
 					
-					else {
+					else if (numberTextField.getText() == null) {
 						critterCount = 1;
 					}
+					
+					else {
+						errorProcessing.setText("Invalid Input");
+					}
+					
+					
+				}
+				else {
+					errorProcessing.setText("Invalid Input");
 				}
 				for(int i = 0; i<critterCount; i++) {
 					try {
 						Critter.makeCritter(className);
 					} catch (InvalidCritterException j) {
-						System.out.println(j.toString());
+						errorProcessing.setText(j.toString());
 					}
 				}
 			}
@@ -101,16 +132,25 @@ public class Main extends Application {
 		stepButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
+				errorProcessing.setText(null);
 				int stepCount = 0;
-				if(stepTextField.getText() != null && !stepTextField.getText().isEmpty()) {
-					String unparsedNumber = stepTextField.getText();
+				String unparsedNumber = stepTextField.getText();
+				Scanner numberScan = new Scanner(unparsedNumber);
+				if(stepTextField.getText() != null && !stepTextField.getText().isEmpty() && numberScan.hasNextInt()) {
 					if(Integer.parseInt(unparsedNumber)>1) {
 						stepCount = Integer.parseInt(unparsedNumber);
 					}
-					else {
+					else if (stepTextField.getText() == null) {
 						Critter.worldTimeStep();
 					}
+					else {
+						errorProcessing.setText("Invalid Input");
+					}
 				}
+				else {
+					errorProcessing.setText("Invalid Input");
+				}
+				
 				for(int i = 0; i<stepCount; i++) {
 					Critter.worldTimeStep();
 				}
@@ -120,13 +160,46 @@ public class Main extends Application {
 	}
 	
 	private static void initBottom(){
-		bGrid.setAlignment(Pos.CENTER);
-		bGrid.setHgap(10);
-		bGrid.setVgap(10);
-		
 		Button showButton = new Button();
-		bGrid.add(showButton, 0, 0);
+		showButton.setPadding(new Insets(10, 10, 10, 10));
+		showButton.setAlignment(Pos.CENTER);
+		//bottomPane.setPadding(new Insets(20, 0, 0, 20));
+		bottomPane.setTop(showButton);
+		BorderPane.setAlignment(showButton, Pos.CENTER);
 		
+		
+		
+		Slider stepSlide = new Slider();
+		bottomPane.setBottom(stepSlide);
+		BorderPane.setAlignment(stepSlide, Pos.CENTER);
+		
+		stepSlide.setMin(0);
+		stepSlide.setMax(100);
+		stepSlide.setMajorTickUnit(25);
+		stepSlide.setMinorTickCount(4);
+		stepSlide.setBlockIncrement(2);
+		stepSlide.setSnapToTicks(true);
+		stepSlide.setShowTickLabels(true);
+		stepSlide.setShowTickMarks(true);
+		stepSlide.getValue();
+		stepSlide.scaleShapeProperty();
+		stepSlide.setMaxWidth(500);
+		stepSlide.setPadding(new Insets(10, 20, 10, 20));
+		Label sliderLabel = new Label("0");
+		
+		bottomPane.setRight(sliderLabel);
+		
+		stepSlide.valueProperty().addListener(new ChangeListener<Number>() {
+			public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
+				sliderLabel.setText(new_val.toString());
+			}
+		});
+		
+		//bottomPane.setCenter(stepSlide);
+		
+		
+	
+	
 		showButton.setText("Show World");
 		showButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -166,7 +239,8 @@ public class Main extends Application {
 					String statsclass = statsTextField.getText();
 					try {
 						critterList = Critter.getInstances(statsclass);
-						Critter.runStats(critterList);
+						
+						//Critter.runStats(critterList);
 					} catch(InvalidCritterException r) {
 						String returnString = r.toString();
 						outputResult.setText(returnString);
@@ -189,14 +263,20 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		primaryStage.setTitle("CRITTER COMMANDS");
 		root.setPadding(new Insets(20, 0, 0, 20));
-		BorderPane.setMargin(bGrid, new Insets(20));
+		BorderPane.setMargin(bottomPane, new Insets(20));
 		BorderPane.setMargin(rGrid, new Insets(0, 20, 20, 20));
+		root.setBackground(new Background(new BackgroundFill(Color.GOLD, CornerRadii.EMPTY, Insets.EMPTY)));
+		
 		
 		initCenter();
 		root.setCenter(grid);
 		
+		//ObjectOutputStream oos = new ObjectOutputStream(outputResult);
+		
+		//System.setOut(outputResult);
+		
 		initBottom();
-		root.setBottom(bGrid);
+		root.setBottom(bottomPane);
 		
 		initRight();
 		root.setRight(rGrid);
