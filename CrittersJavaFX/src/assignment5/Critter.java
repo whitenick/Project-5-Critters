@@ -1,8 +1,14 @@
 package assignment5;
 
 import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
+
 import assignment5.Params;
+import javafx.stage.Stage;
 
 public abstract class Critter {
 	/* NEW FOR PROJECT 5 */
@@ -298,6 +304,7 @@ public abstract class Critter {
 			int y = displayList.get(i).y_coord;
 			CritterWorldGUI.draw(x, y, displayList.get(i));
 		}
+
 	}
 	
 	/* create and initialize a Critter subclass
@@ -330,7 +337,23 @@ public abstract class Critter {
 					critInstances.add(crit);
 				}
 			}
-		} catch(InstantiationException | IllegalAccessException | ClassNotFoundException e){
+			//test
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintStream ps = new PrintStream(baos);
+			System.setOut(ps);
+			Class classInput = obj.getClass();
+			try {
+				Method craigMethod = classInput.getMethod("runStats", List.class);
+				try {
+					craigMethod.invoke(obj, critInstances);
+					application.Main.outputResult.setText(application.Main.outputResult.getText() + baos.toString() + "\n");
+				} catch (IllegalArgumentException | InvocationTargetException e) {
+					throw new InvalidCritterException(critter_class_name);
+				}
+			} catch(NoSuchMethodException | SecurityException e){
+				throw new InvalidCritterException(critter_class_name);
+			}
+		} catch ( InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			throw new InvalidCritterException(critter_class_name);
 		}
 		
@@ -358,6 +381,7 @@ public abstract class Critter {
 			prefix = ", ";
 		}
 		application.Main.outputResult.setText(application.Main.outputResult.getText()+"\n");
+		
 	}
 	
 	/* the TestCritter class allows some critters to "cheat". If you want to 

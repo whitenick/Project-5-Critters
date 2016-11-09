@@ -1,16 +1,22 @@
 package assignment5;
+import java.util.List;
 import assignment5.Critter.CritterShape;
 import javafx.stage.*;
 import javafx.scene.*;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.application.*;
+import javafx.geometry.Insets;
 import javafx.event.EventHandler;
 
 
-//TODO: Move to application package
+
 
 public class CritterWorldGUI extends Application {
 	static int scale = 10;
@@ -21,6 +27,8 @@ public class CritterWorldGUI extends Application {
 	
 	private static Canvas world = new Canvas();
 	private static GraphicsContext gc;
+
+
 	
 	public CritterWorldGUI() {
 		
@@ -41,7 +49,6 @@ public class CritterWorldGUI extends Application {
 		CritterShape shape = critter.viewShape();
 		Color strokeColor = critter.viewOutlineColor();
 		Color fillColor = critter.viewFillColor();
-		
 		x *= scale;
 		y *= scale;
 		
@@ -123,7 +130,7 @@ public class CritterWorldGUI extends Application {
 				break;
 		}
 	}
-	
+
 	public static void refresh(){
 		paintCanvas(gc);
 	}
@@ -163,5 +170,6 @@ public class CritterWorldGUI extends Application {
 			}
 			
 		});
+
 	}
 }
